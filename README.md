@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MediConsult — Health Consultation Platform
 
 A lightweight health consultation web application built with Python Flask and SQLite3. Patients can submit consultations and book appointments, doctors can review and respond, and admins have full system control through a dedicated admin panel.
@@ -214,3 +215,7 @@ Demonstrates INSERT, SELECT, UPDATE, DELETE against the live database.
 
 Press **Ctrl + C** in the terminal where the app is running.
 
+=======
+# Health_Consultation_Final-main
+Mini Project for semester 5
+>>>>>>> 863e9009405234f7a337a733f5d52d023ba88683
