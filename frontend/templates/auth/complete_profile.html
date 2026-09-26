@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}Complete Your Profile{% endblock %}
+{% block page_title %}Complete Your Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div>
+      <h1 class="page-title">Complete Your Profile</h1>
+      <p class="page-subtitle">Step 2 of 2 — {% if role == 'doctor' %}Add your professional details{% else %}Add your personal and medical details{% endif %}</p>
+    </div>
+  </div>
+</div>
+
+<div class="step-indicator" style="max-width:320px; margin-bottom:28px;">
+  <div class="step completed">
+    <span class="step-number"><i data-lucide="check"></i></span>
+    <span class="step-label">Account</span>
+  </div>
+  <div class="step-line active"></div>
+  <div class="step active">
+    <span class="step-number">2</span>
+    <span class="step-label">Profile</span>
+  </div>
+</div>
+
+<div class="form-container" style="max-width:680px;">
+  <form method="POST" action="{{ url_for('main.complete_profile') }}" class="form-card">
+
+    {% if role == 'doctor' %}
+
+    <div class="form-section-title">
+      <i data-lucide="stethoscope"></i> Professional Information
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="specialty" class="form-label">Specialty <span style="color:var(--danger)">*</span></label>
+        <input
+          type="text"
+          id="specialty"
+          name="specialty"
+          class="form-input"
+          placeholder="e.g. General Practitioner, Cardiologist"
+          required
+        />
+      </div>
+      <div class="form-group">
+        <label for="license_number" class="form-label">License Number <span style="color:var(--danger)">*</span></label>
+        <input
+          type="text"
+          id="license_number"
+          name="license_number"
+          class="form-input"
+          placeholder="e.g. LIC-20241001"
+          required
+        />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="phone" class="form-label">Phone Number <span style="color:var(--danger)">*</span></label>
+      <input
+        type="tel"
+        id="phone"
+        name="phone"
+        class="form-input"
+        placeholder="+1 555 000 0000"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label for="bio" class="form-label">Short Bio <span style="color:var(--gray-400); font-weight:400; font-size:.8rem;">(optional)</span></label>
+      <textarea
+        id="bio"
+        name="bio"
+        class="form-input form-textarea"
+        placeholder="Brief description of your experience and practice..."
+        rows="3"
+      ></textarea>
+    </div>
+
+    {% else %}
+
+    <div class="form-section-title">
+      <i data-lucide="user"></i> Personal Information
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="date_of_birth" class="form-label">Date of Birth</label>
+        <input type="date" id="date_of_birth" name="date_of_birth" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label for="gender" class="form-label">Gender</label>
+        <select id="gender" name="gender" class="form-input form-select">
+          <option value="">Select gender</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Non-binary">Non-binary</option>
+          <option value="Prefer not to say">Prefer not to say</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="phone" class="form-label">Phone Number</label>
+        <input type="tel" id="phone" name="phone" class="form-input" placeholder="+1 555 000 0000" />
+      </div>
+      <div class="form-group">
+        <label for="blood_type" class="form-label">Blood Type</label>
+        <select id="blood_type" name="blood_type" class="form-input form-select">
+          <option value="">Select blood type</option>
+          <option>A+</option><option>A-</option>
+          <option>B+</option><option>B-</option>
+          <option>AB+</option><option>AB-</option>
+          <option>O+</option><option>O-</option>
+          <option>Unknown</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="address" class="form-label">Home Address</label>
+      <input type="text" id="address" name="address" class="form-input" placeholder="123 Main St, City, State, ZIP" />
+    </div>
+
+    <div class="form-section-title">
+      <i data-lucide="activity"></i> Medical Information
+    </div>
+
+    <div class="form-group">
+      <label for="allergies" class="form-label">Known Allergies</label>
+      <input type="text" id="allergies" name="allergies" class="form-input" placeholder="e.g. Penicillin, Peanuts, Latex - or None" />
+    </div>
+
+    <div class="form-section-title">
+      <i data-lucide="phone-call"></i> Emergency Contact
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="emergency_contact" class="form-label">Contact Name</label>
+        <input type="text" id="emergency_contact" name="emergency_contact" class="form-input" placeholder="Full name" />
+      </div>
+      <div class="form-group">
+        <label for="emergency_phone" class="form-label">Contact Phone</label>
+        <input type="tel" id="emergency_phone" name="emergency_phone" class="form-input" placeholder="+1 555 000 0000" />
+      </div>
+    </div>
+
+    {% endif %}
+
+    <div class="form-actions">
+      <a href="{{ url_for('main.dashboard') }}" class="btn btn-ghost">Skip for now</a>
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="check-circle"></i> Complete Setup
+      </button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

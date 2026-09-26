@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}Doctor Dashboard{% endblock %}
+{% block page_title %}Doctor Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+
+  <div class="welcome-banner">
+    <div class="welcome-text">
+      <h2>Hello, {{ session.user_name }}</h2>
+      {% if doctor %}
+      <p>{{ doctor.specialty or 'General Practice' }} &bull; License: {{ doctor.license_number or 'N/A' }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-icon"><i data-lucide="users"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.total_patients }}</span>
+        <span class="stat-label">Total Patients</span>
+      </div>
+      <span class="stat-link"></span>
+    </div>
+    <div class="stat-card amber">
+      <div class="stat-icon"><i data-lucide="clock"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.pending_consultations }}</span>
+        <span class="stat-label">Pending Consultations</span>
+      </div>
+      <a href="{{ url_for('main.consultations') }}" class="stat-link">Review <i data-lucide="arrow-right"></i></a>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-icon"><i data-lucide="calendar-check"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.upcoming_appointments }}</span>
+        <span class="stat-label">Scheduled Appointments</span>
+      </div>
+      <a href="{{ url_for('main.appointments') }}" class="stat-link">View <i data-lucide="arrow-right"></i></a>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon"><i data-lucide="stethoscope"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.total_consultations }}</span>
+        <span class="stat-label">All Consultations</span>
+      </div>
+      <a href="{{ url_for('main.consultations') }}" class="stat-link">View <i data-lucide="arrow-right"></i></a>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Recent consultations -->
+    <div class="dash-card">
+      <div class="dash-card-header">
+        <div class="dash-card-title">
+          <i data-lucide="stethoscope"></i>
+          <h3>Recent Consultations</h3>
+        </div>
+        <a href="{{ url_for('main.consultations') }}" class="btn btn-sm btn-ghost">View all</a>
+      </div>
+      {% if consultations %}
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Complaint</th>
+              <th>Severity</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in consultations %}
+            <tr>
+              <td class="td-primary">{{ c.patient_name }}</td>
+              <td>{{ c.chief_complaint }}</td>
+              <td><span class="badge badge-severity-{{ c.severity | lower }}">{{ c.severity }}</span></td>
+              <td><span class="badge badge-status-{{ c.status }}">{{ c.status | capitalize }}</span></td>
+              <td>
+                <a href="{{ url_for('main.view_consultation', consultation_id=c.id) }}" class="btn btn-ghost btn-icon" title="View">
+                  <i data-lucide="eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i data-lucide="clipboard-x"></i>
+        <p>No consultations to review</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Upcoming appointments -->
+    <div class="dash-card">
+      <div class="dash-card-header">
+        <div class="dash-card-title">
+          <i data-lucide="calendar-days"></i>
+          <h3>Today's Schedule</h3>
+        </div>
+        <a href="{{ url_for('main.appointments') }}" class="btn btn-sm btn-ghost">View all</a>
+      </div>
+      {% if appointments %}
+      <div class="appointment-list">
+        {% for a in appointments %}
+        <div class="appointment-item">
+          <div class="appt-date-badge">
+            <span class="appt-month">{{ a.appointment_date[5:7] | int | month_name }}</span>
+            <span class="appt-day">{{ a.appointment_date[8:10] }}</span>
+          </div>
+          <div class="appt-info">
+            <span class="appt-doctor">{{ a.patient_name }}</span>
+            <span class="appt-time"><i data-lucide="clock"></i> {{ a.appointment_time }} &bull; {{ a.type | capitalize }}</span>
+          </div>
+          <form method="POST" action="{{ url_for('main.update_appointment', appointment_id=a.id) }}">
+            <select name="status" class="form-input form-select form-select-sm" onchange="this.form.submit()" aria-label="Change appointment status">
+              <option value="scheduled" {% if a.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+              <option value="completed" {% if a.status == 'completed' %}selected{% endif %}>Completed</option>
+              <option value="cancelled" {% if a.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+          </form>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i data-lucide="calendar-x"></i>
+        <p>No appointments scheduled</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,378 @@
+{% extends "base.html" %}
+{% block title %}New Consultation{% endblock %}
+{% block page_title %}New Consultation Request{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <a href="{{ url_for('main.consultations') }}" class="btn btn-ghost btn-sm">
+      <i data-lucide="arrow-left"></i> Back
+    </a>
+    <div>
+      <h1 class="page-title">Request a Consultation</h1>
+      <p class="page-subtitle">Describe your health concern so we can match you with the right doctor</p>
+    </div>
+  </div>
+</div>
+
+<!-- Multi-step form -->
+<div class="form-wizard">
+  <!-- Progress bar -->
+  <div class="wizard-progress">
+    <div class="wizard-step active" data-step="1">
+      <div class="wstep-icon"><i data-lucide="clipboard-list"></i></div>
+      <span>Chief Complaint</span>
+    </div>
+    <div class="wizard-line"></div>
+    <div class="wizard-step" data-step="2">
+      <div class="wstep-icon"><i data-lucide="activity"></i></div>
+      <span>Symptoms</span>
+    </div>
+    <div class="wizard-line"></div>
+    <div class="wizard-step" data-step="3">
+      <div class="wstep-icon"><i data-lucide="file-text"></i></div>
+      <span>Medical History</span>
+    </div>
+    <div class="wizard-line"></div>
+    <div class="wizard-step" data-step="4">
+      <div class="wstep-icon"><i data-lucide="check-circle"></i></div>
+      <span>Review</span>
+    </div>
+  </div>
+
+  <form method="POST" action="{{ url_for('main.new_consultation') }}" id="consultationForm">
+    <div class="wizard-card">
+
+      <!-- Step 1: Chief Complaint -->
+      <div class="wizard-panel active" id="panel-1">
+        <div class="wizard-panel-header">
+          <h3>What is your main health concern?</h3>
+          <p>Provide a brief summary of why you are seeking consultation today.</p>
+        </div>
+        <div class="form-group">
+          <label for="chief_complaint" class="form-label required">
+            <i data-lucide="message-square"></i> Chief Complaint
+          </label>
+          <input
+            type="text"
+            id="chief_complaint"
+            name="chief_complaint"
+            class="form-input"
+            placeholder="e.g. Persistent headache for 3 days"
+            required
+          />
+          <span class="form-hint">Be as specific as possible — this helps the doctor prepare.</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="duration" class="form-label required">
+              <i data-lucide="clock"></i> Duration of Symptoms
+            </label>
+            <select id="duration" name="duration" class="form-input form-select" required>
+              <option value="">Select duration</option>
+              <option value="Less than 24 hours">Less than 24 hours</option>
+              <option value="1-3 days">1–3 days</option>
+              <option value="4-7 days">4–7 days</option>
+              <option value="1-2 weeks">1–2 weeks</option>
+              <option value="2-4 weeks">2–4 weeks</option>
+              <option value="1-3 months">1–3 months</option>
+              <option value="More than 3 months">More than 3 months</option>
+              <option value="N/A">N/A (check-up)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="severity" class="form-label required">
+              <i data-lucide="gauge"></i> Severity
+            </label>
+            <div class="severity-selector" id="severitySelector">
+              <label class="severity-option" data-value="Low">
+                <input type="radio" name="severity" value="Low" required />
+                <span class="sev-dot low"></span>
+                Low
+              </label>
+              <label class="severity-option" data-value="Moderate">
+                <input type="radio" name="severity" value="Moderate" />
+                <span class="sev-dot moderate"></span>
+                Moderate
+              </label>
+              <label class="severity-option" data-value="High">
+                <input type="radio" name="severity" value="High" />
+                <span class="sev-dot high"></span>
+                High
+              </label>
+              <label class="severity-option" data-value="Critical">
+                <input type="radio" name="severity" value="Critical" />
+                <span class="sev-dot critical"></span>
+                Critical
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="wizard-nav">
+          <span></span>
+          <button type="button" class="btn btn-primary" onclick="nextStep(1)">
+            Next <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Symptoms -->
+      <div class="wizard-panel" id="panel-2">
+        <div class="wizard-panel-header">
+          <h3>Describe your symptoms in detail</h3>
+          <p>The more detail you provide, the better we can assist you.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="symptoms" class="form-label required">
+            <i data-lucide="thermometer"></i> Symptoms
+          </label>
+          <textarea
+            id="symptoms"
+            name="symptoms"
+            class="form-input form-textarea"
+            rows="5"
+            placeholder="Describe your symptoms in detail. Include location, quality, onset, and any factors that worsen or improve them."
+            required
+          ></textarea>
+        </div>
+
+        <!-- Quick symptom tags -->
+        <div class="form-group">
+          <label class="form-label">
+            <i data-lucide="tag"></i> Common Symptoms (click to add)
+          </label>
+          <div class="symptom-tags">
+            <button type="button" class="tag-btn" onclick="addSymptom('Fever')">Fever</button>
+            <button type="button" class="tag-btn" onclick="addSymptom('Headache')">Headache</button>
+            <button type="button" class="tag-btn" onclick="addSymptom('Nausea')">Nausea</button>
+            <button type="button" class="tag-btn" onclick="addSymptom('Fatigue')">Fatigue</button>
+            <button type="button" class="tag-btn" onclick="addSymptom('Chest pain')">Chest pain</button>
+            <button type="button" class="tag-btn" onclick="addSymptom('Shortness of breath')">Shortness of breath</button>
+            <button type="button" class="tag-btn" onclick="addSymptom('Dizziness')">Dizziness</button>
+            <button type="button" class="tag-btn" onclick="addSymptom('Joint pain')">Joint pain</button>
+            <button type="button" class="tag-btn" onclick="addSymptom('Cough')">Cough</button>
+            <button type="button" class="tag-btn" onclick="addSymptom('Sore throat')">Sore throat</button>
+          </div>
+        </div>
+
+        <div class="wizard-nav">
+          <button type="button" class="btn btn-ghost" onclick="prevStep(2)">
+            <i data-lucide="arrow-left"></i> Back
+          </button>
+          <button type="button" class="btn btn-primary" onclick="nextStep(2)">
+            Next <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Medical History -->
+      <div class="wizard-panel" id="panel-3">
+        <div class="wizard-panel-header">
+          <h3>Medical history &amp; medications</h3>
+          <p>This information helps the doctor make a more accurate assessment.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="medical_history" class="form-label">
+            <i data-lucide="file-heart"></i> Relevant Medical History
+          </label>
+          <textarea
+            id="medical_history"
+            name="medical_history"
+            class="form-input form-textarea"
+            rows="4"
+            placeholder="List any relevant past conditions, surgeries, or chronic illnesses (e.g. Diabetes, Hypertension, Appendectomy 2019)"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="current_medications" class="form-label">
+            <i data-lucide="pill"></i> Current Medications
+          </label>
+          <textarea
+            id="current_medications"
+            name="current_medications"
+            class="form-input form-textarea"
+            rows="3"
+            placeholder="List any medications, supplements, or vitamins you are currently taking with dosages (or write None)"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="notes" class="form-label">
+            <i data-lucide="sticky-note"></i> Additional Notes
+          </label>
+          <textarea
+            id="notes"
+            name="notes"
+            class="form-input form-textarea"
+            rows="3"
+            placeholder="Any other information the doctor should know"
+          ></textarea>
+        </div>
+
+        <div class="wizard-nav">
+          <button type="button" class="btn btn-ghost" onclick="prevStep(3)">
+            <i data-lucide="arrow-left"></i> Back
+          </button>
+          <button type="button" class="btn btn-primary" onclick="nextStep(3)">
+            Review <i data-lucide="arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 4: Review -->
+      <div class="wizard-panel" id="panel-4">
+        <div class="wizard-panel-header">
+          <h3>Review your consultation request</h3>
+          <p>Please verify all information before submitting.</p>
+        </div>
+
+        <div class="review-card">
+          <div class="review-section">
+            <div class="review-row">
+              <span class="review-label"><i data-lucide="message-square"></i> Chief Complaint</span>
+              <span class="review-value" id="rev-complaint">—</span>
+            </div>
+            <div class="review-row">
+              <span class="review-label"><i data-lucide="clock"></i> Duration</span>
+              <span class="review-value" id="rev-duration">—</span>
+            </div>
+            <div class="review-row">
+              <span class="review-label"><i data-lucide="gauge"></i> Severity</span>
+              <span class="review-value" id="rev-severity">—</span>
+            </div>
+          </div>
+          <div class="review-section">
+            <div class="review-row">
+              <span class="review-label"><i data-lucide="thermometer"></i> Symptoms</span>
+              <span class="review-value" id="rev-symptoms">—</span>
+            </div>
+          </div>
+          <div class="review-section">
+            <div class="review-row">
+              <span class="review-label"><i data-lucide="file-heart"></i> Medical History</span>
+              <span class="review-value" id="rev-history">Not provided</span>
+            </div>
+            <div class="review-row">
+              <span class="review-label"><i data-lucide="pill"></i> Medications</span>
+              <span class="review-value" id="rev-medications">Not provided</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-banner">
+          <i data-lucide="info"></i>
+          <p>Your consultation will be reviewed by an available doctor. You will be notified once a doctor is assigned.</p>
+        </div>
+
+        <div class="wizard-nav">
+          <button type="button" class="btn btn-ghost" onclick="prevStep(4)">
+            <i data-lucide="arrow-left"></i> Edit
+          </button>
+          <button type="submit" class="btn btn-primary btn-submit">
+            <i data-lucide="send"></i> Submit Consultation
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  let currentStep = 1;
+  const totalSteps = 4;
+
+  function updateProgress(step) {
+    document.querySelectorAll('.wizard-step').forEach((el, i) => {
+      el.classList.toggle('active', i + 1 === step);
+      el.classList.toggle('completed', i + 1 < step);
+    });
+    document.querySelectorAll('.wizard-line').forEach((el, i) => {
+      el.classList.toggle('active', i + 1 < step);
+    });
+  }
+
+  function showPanel(step) {
+    document.querySelectorAll('.wizard-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + step).classList.add('active');
+    updateProgress(step);
+    currentStep = step;
+  }
+
+  function nextStep(from) {
+    if (from === 1) {
+      const cc = document.getElementById('chief_complaint').value.trim();
+      const dur = document.getElementById('duration').value;
+      const sev = document.querySelector('input[name="severity"]:checked');
+      if (!cc || !dur || !sev) {
+        showValidationError('Please fill in all required fields.');
+        return;
+      }
+    }
+    if (from === 2) {
+      const sym = document.getElementById('symptoms').value.trim();
+      if (!sym) {
+        showValidationError('Please describe your symptoms.');
+        return;
+      }
+    }
+    if (from === 3) {
+      populateReview();
+    }
+    showPanel(from + 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function prevStep(from) {
+    showPanel(from - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function populateReview() {
+    const getText = id => document.getElementById(id).value.trim() || 'Not provided';
+    const sev = document.querySelector('input[name="severity"]:checked');
+    document.getElementById('rev-complaint').textContent   = getText('chief_complaint');
+    document.getElementById('rev-duration').textContent    = document.getElementById('duration').value || '—';
+    document.getElementById('rev-severity').textContent    = sev ? sev.value : '—';
+    document.getElementById('rev-symptoms').textContent    = getText('symptoms');
+    document.getElementById('rev-history').textContent     = getText('medical_history');
+    document.getElementById('rev-medications').textContent = getText('current_medications');
+  }
+
+  function addSymptom(text) {
+    const ta = document.getElementById('symptoms');
+    ta.value = ta.value ? ta.value + ', ' + text : text;
+  }
+
+  function showValidationError(msg) {
+    let err = document.getElementById('wizard-error');
+    if (!err) {
+      err = document.createElement('div');
+      err.id = 'wizard-error';
+      err.className = 'flash flash-error';
+      err.innerHTML = '<i data-lucide="x-circle"></i><span></span>';
+      document.querySelector('.wizard-card').prepend(err);
+    }
+    err.querySelector('span').textContent = msg;
+    err.style.display = 'flex';
+    lucide.createIcons();
+    setTimeout(() => { err.style.display = 'none'; }, 4000);
+  }
+
+  // Severity selector visual feedback
+  document.querySelectorAll('.severity-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.severity-option').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+  });
+</script>
+{% endblock %}

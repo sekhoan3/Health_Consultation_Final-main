@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Admin — Appointments{% endblock %}
+{% block page_title %}Appointments{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div>
+      <h1 class="page-title">All Appointments</h1>
+      <p class="page-subtitle">View and update appointment statuses across all patients</p>
+    </div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="search-box">
+    <i data-lucide="search"></i>
+    <input type="text" id="aSearch" placeholder="Search appointments..." oninput="filterA()" />
+  </div>
+  <div class="filter-buttons">
+    <button class="filter-btn active" onclick="filterAS('all',this)">All</button>
+    <button class="filter-btn" onclick="filterAS('scheduled',this)">Scheduled</button>
+    <button class="filter-btn" onclick="filterAS('completed',this)">Completed</button>
+    <button class="filter-btn" onclick="filterAS('cancelled',this)">Cancelled</button>
+  </div>
+</div>
+
+{% if appointments %}
+<div class="card">
+  <div class="table-wrapper">
+    <table class="data-table" id="aTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Patient</th>
+          <th>Doctor</th>
+          <th>Specialty</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in appointments %}
+        <tr data-status="{{ a.status }}">
+          <td class="td-muted">#{{ a.id }}</td>
+          <td class="td-primary">{{ a.patient_name }}</td>
+          <td class="td-primary">{{ a.doctor_name or 'TBD' }}</td>
+          <td class="td-muted">{{ a.specialty or '—' }}</td>
+          <td>
+            <span class="date-chip">
+              <i data-lucide="calendar"></i> {{ a.appointment_date }}
+            </span>
+          </td>
+          <td>
+            <span class="time-chip">
+              <i data-lucide="clock"></i> {{ a.appointment_time }}
+            </span>
+          </td>
+          <td>
+            <span class="badge badge-type-{{ a.type | replace('-','') }}">
+              {% if a.type == 'in-person' %}<i data-lucide="building-2"></i>
+              {% else %}<i data-lucide="video"></i>{% endif %}
+              {{ a.type | replace('-',' ') | capitalize }}
+            </span>
+          </td>
+          <td><span class="badge badge-status-{{ a.status }}">{{ a.status | capitalize }}</span></td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.update_appointment', aid=a.id) }}"
+                  class="inline-status-form">
+              <select name="status" class="form-input form-select inline-select"
+                      onchange="this.form.submit()">
+                <option value="scheduled" {% if a.status == 'scheduled' %}selected{% endif %}>Scheduled</option>
+                <option value="completed" {% if a.status == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="cancelled" {% if a.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+              </select>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-page">
+  <div class="empty-page-icon"><i data-lucide="calendar-x"></i></div>
+  <h3>No appointments found</h3>
+  <p>Appointments booked by patients will appear here.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function filterA() {
+    const q = document.getElementById('aSearch').value.toLowerCase();
+    document.querySelectorAll('#aTable tbody tr').forEach(r => {
+      r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+  function filterAS(s, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#aTable tbody tr').forEach(r => {
+      r.style.display = (s === 'all' || r.dataset.status === s) ? '' : 'none';
+    });
+  }
+</script>
+{% endblock %}

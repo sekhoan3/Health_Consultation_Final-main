@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Consultation #{{ consultation.id }}{% endblock %}
+{% block page_title %}Consultation Details{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <a href="{{ url_for('main.consultations') }}" class="btn btn-ghost btn-sm">
+      <i data-lucide="arrow-left"></i> Back
+    </a>
+    <div>
+      <h1 class="page-title">Consultation #{{ consultation.id }}</h1>
+      <p class="page-subtitle">Submitted on {{ consultation.created_at[:10] }}</p>
+    </div>
+  </div>
+  <span class="badge badge-status-{{ consultation.status }} badge-lg">{{ consultation.status | capitalize }}</span>
+</div>
+
+<div class="detail-grid">
+
+  <!-- Left column -->
+  <div class="detail-main">
+
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i data-lucide="clipboard-list"></i>
+        <h3>Chief Complaint</h3>
+      </div>
+      <p class="complaint-text">{{ consultation.chief_complaint }}</p>
+      <div class="detail-meta">
+        <div class="meta-item">
+          <i data-lucide="clock"></i>
+          <span>Duration: <strong>{{ consultation.duration or 'Not specified' }}</strong></span>
+        </div>
+        <div class="meta-item">
+          <span class="badge badge-severity-{{ (consultation.severity or 'low') | lower }}">
+            {{ consultation.severity or 'Not specified' }} severity
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i data-lucide="thermometer"></i>
+        <h3>Symptoms</h3>
+      </div>
+      <p class="detail-text">{{ consultation.symptoms or 'No symptoms provided.' }}</p>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i data-lucide="file-heart"></i>
+        <h3>Medical History</h3>
+      </div>
+      <p class="detail-text">{{ consultation.medical_history or 'No medical history provided.' }}</p>
+    </div>
+
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i data-lucide="pill"></i>
+        <h3>Current Medications</h3>
+      </div>
+      <p class="detail-text">{{ consultation.current_medications or 'None provided.' }}</p>
+    </div>
+
+    {% if consultation.notes %}
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i data-lucide="sticky-note"></i>
+        <h3>Doctor Notes</h3>
+      </div>
+      <p class="detail-text">{{ consultation.notes }}</p>
+    </div>
+    {% endif %}
+
+  </div>
+
+  <!-- Right column -->
+  <div class="detail-sidebar">
+
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i data-lucide="info"></i>
+        <h3>Consultation Info</h3>
+      </div>
+      <ul class="info-list">
+        <li>
+          <span class="info-label">Patient</span>
+          <span class="info-value">{{ consultation.patient_name }}</span>
+        </li>
+        <li>
+          <span class="info-label">Assigned Doctor</span>
+          <span class="info-value">{{ consultation.doctor_name or 'Not assigned' }}</span>
+        </li>
+        <li>
+          <span class="info-label">Submitted</span>
+          <span class="info-value">{{ consultation.created_at[:10] }}</span>
+        </li>
+        <li>
+          <span class="info-label">Last Updated</span>
+          <span class="info-value">{{ consultation.updated_at[:10] }}</span>
+        </li>
+        <li>
+          <span class="info-label">Status</span>
+          <span class="info-value">
+            <span class="badge badge-status-{{ consultation.status }}">{{ consultation.status | capitalize }}</span>
+          </span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Doctor update panel -->
+    {% if session.user_role in ('doctor', 'admin') %}
+    <div class="detail-card">
+      <div class="detail-card-header">
+        <i data-lucide="pencil"></i>
+        <h3>Update Consultation</h3>
+      </div>
+      <form method="POST" action="{{ url_for('main.update_consultation', consultation_id=consultation.id) }}">
+        <div class="form-group">
+          <label for="status" class="form-label">Status</label>
+          <select id="status" name="status" class="form-input form-select">
+            <option value="pending"   {% if consultation.status == 'pending'   %}selected{% endif %}>Pending</option>
+            <option value="in-review" {% if consultation.status == 'in-review' %}selected{% endif %}>In Review</option>
+            <option value="completed" {% if consultation.status == 'completed' %}selected{% endif %}>Completed</option>
+            <option value="cancelled" {% if consultation.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="notes" class="form-label">Doctor Notes</label>
+          <textarea id="notes" name="notes" class="form-input form-textarea" rows="4"
+            placeholder="Add clinical notes, diagnosis, or recommendations">{{ consultation.notes or '' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">
+          <i data-lucide="save"></i> Save Changes
+        </button>
+      </form>
+    </div>
+    {% endif %}
+
+    <div class="detail-actions">
+      <a href="{{ url_for('main.new_appointment') }}" class="btn btn-outline btn-full">
+        <i data-lucide="calendar-plus"></i> Book Follow-up
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

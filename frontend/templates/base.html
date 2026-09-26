@@ -1,0 +1,203 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}MediConsult{% endblock %} - Health Platform</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  {% block head %}{% endblock %}
+</head>
+<body class="app-body">
+
+{% if session.user_id %}
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <i data-lucide="heart-pulse"></i>
+        </div>
+        <span class="brand-name">MediConsult</span>
+      </div>
+      <button class="sidebar-close" id="sidebarClose" type="button">
+        <i data-lucide="x"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      {% if session.user_role == 'admin' %}
+
+        <div class="nav-section-label">Admin Panel</div>
+        <ul>
+          <li>
+            <a href="{{ url_for('admin.dashboard') }}"
+               class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+              <i data-lucide="shield"></i>
+              <span>Admin Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('admin.users') }}"
+               class="nav-link {% if 'admin.user' in (request.endpoint or '') %}active{% endif %}">
+              <i data-lucide="users"></i>
+              <span>Manage Users</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('admin.consultations') }}"
+               class="nav-link {% if request.endpoint == 'admin.consultations' %}active{% endif %}">
+              <i data-lucide="stethoscope"></i>
+              <span>Consultations</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('admin.appointments') }}"
+               class="nav-link {% if request.endpoint == 'admin.appointments' %}active{% endif %}">
+              <i data-lucide="calendar-days"></i>
+              <span>Appointments</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="nav-divider"></div>
+        <div class="nav-section-label">General</div>
+        <ul>
+          <li>
+            <a href="{{ url_for('main.dashboard') }}"
+               class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('main.profile') }}"
+               class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+              <i data-lucide="user-circle"></i>
+              <span>My Profile</span>
+            </a>
+          </li>
+        </ul>
+
+      {% else %}
+
+        <ul>
+          <li>
+            <a href="{{ url_for('main.dashboard') }}"
+               class="nav-link {% if request.endpoint == 'main.dashboard' %}active{% endif %}">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('main.consultations') }}"
+               class="nav-link {% if 'consultation' in (request.endpoint or '') %}active{% endif %}">
+              <i data-lucide="stethoscope"></i>
+              <span>Consultations</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('main.appointments') }}"
+               class="nav-link {% if 'appointment' in (request.endpoint or '') %}active{% endif %}">
+              <i data-lucide="calendar-days"></i>
+              <span>Appointments</span>
+            </a>
+          </li>
+          <li>
+            <a href="{{ url_for('main.profile') }}"
+               class="nav-link {% if request.endpoint == 'main.profile' %}active{% endif %}">
+              <i data-lucide="user-circle"></i>
+              <span>My Profile</span>
+            </a>
+          </li>
+        </ul>
+
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar {% if session.user_role == 'admin' %}avatar-admin{% endif %}">
+          {{ session.user_name[0] | upper }}
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{ session.user_name }}</span>
+          <span class="user-role">{{ session.user_role | capitalize }}</span>
+        </div>
+      </div>
+      <a href="{{ url_for('main.logout') }}" class="logout-btn" title="Logout">
+        <i data-lucide="log-out"></i>
+      </a>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="main-wrapper">
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle" type="button">
+        <i data-lucide="menu"></i>
+      </button>
+      <div class="topbar-title">{% block page_title %}{% endblock %}</div>
+      <div class="topbar-right">
+        {% if session.user_role == 'admin' %}
+          <span class="topbar-badge topbar-badge-admin">
+            <i data-lucide="shield" style="width:11px;height:11px;"></i> Admin
+          </span>
+        {% else %}
+          <span class="topbar-badge">{{ session.user_role | capitalize }}</span>
+        {% endif %}
+        <div class="topbar-avatar {% if session.user_role == 'admin' %}avatar-admin{% endif %}">
+          {{ session.user_name[0] | upper }}
+        </div>
+      </div>
+    </header>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">
+              <i data-lucide="{% if category == 'success' %}check-circle{% elif category == 'error' %}x-circle{% elif category == 'warning' %}alert-triangle{% else %}info{% endif %}"></i>
+              <span>{{ message }}</span>
+              <button class="flash-close" type="button" onclick="this.parentElement.remove()">
+                <i data-lucide="x"></i>
+              </button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <main class="page-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+{% else %}
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container flash-auth">
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">
+            <i data-lucide="{% if category == 'success' %}check-circle{% elif category == 'error' %}x-circle{% elif category == 'warning' %}alert-triangle{% else %}info{% endif %}"></i>
+            <span>{{ message }}</span>
+            <button class="flash-close" type="button" onclick="this.parentElement.remove()">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block auth_content %}{% endblock %}
+
+{% endif %}
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>lucide.createIcons();</script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

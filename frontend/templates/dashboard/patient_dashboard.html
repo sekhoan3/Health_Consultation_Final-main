@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+
+  <!-- Welcome banner -->
+  <div class="welcome-banner">
+    <div class="welcome-text">
+      <h2>Hello, {{ session.user_name.split()[0] }}</h2>
+      <p>Here is an overview of your health consultations and upcoming appointments.</p>
+    </div>
+    <div class="welcome-actions">
+      <a href="{{ url_for('main.new_consultation') }}" class="btn btn-primary">
+        <i data-lucide="plus"></i> New Consultation
+      </a>
+      <a href="{{ url_for('main.new_appointment') }}" class="btn btn-outline">
+        <i data-lucide="calendar-plus"></i> Book Appointment
+      </a>
+    </div>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-icon"><i data-lucide="stethoscope"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.total_consultations }}</span>
+        <span class="stat-label">My Consultations</span>
+      </div>
+      <a href="{{ url_for('main.consultations') }}" class="stat-link">View all <i data-lucide="arrow-right"></i></a>
+    </div>
+
+    <div class="stat-card amber">
+      <div class="stat-icon"><i data-lucide="clock"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.pending_consultations }}</span>
+        <span class="stat-label">Awaiting Review</span>
+      </div>
+      <a href="{{ url_for('main.consultations') }}" class="stat-link">View all <i data-lucide="arrow-right"></i></a>
+    </div>
+
+    <div class="stat-card green">
+      <div class="stat-icon"><i data-lucide="calendar-check"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.upcoming_appointments }}</span>
+        <span class="stat-label">Scheduled Appointments</span>
+      </div>
+      <a href="{{ url_for('main.appointments') }}" class="stat-link">View all <i data-lucide="arrow-right"></i></a>
+    </div>
+
+    <div class="stat-card purple">
+      <div class="stat-icon"><i data-lucide="users"></i></div>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.total_doctors }}</span>
+        <span class="stat-label">Available Doctors</span>
+      </div>
+      <span class="stat-link"></span>
+    </div>
+  </div>
+
+  <!-- Main content grid -->
+  <div class="dashboard-grid">
+
+    <!-- Recent Consultations -->
+    <div class="dash-card">
+      <div class="dash-card-header">
+        <div class="dash-card-title">
+          <i data-lucide="stethoscope"></i>
+          <h3>Recent Consultations</h3>
+        </div>
+        <a href="{{ url_for('main.new_consultation') }}" class="btn btn-sm btn-primary">
+          <i data-lucide="plus"></i> New
+        </a>
+      </div>
+
+      {% if consultations %}
+      <div class="table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Complaint</th>
+              <th>Severity</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in consultations %}
+            <tr>
+              <td class="td-primary">{{ c.chief_complaint }}</td>
+              <td><span class="badge badge-severity-{{ c.severity | lower }}">{{ c.severity }}</span></td>
+              <td><span class="badge badge-status-{{ c.status }}">{{ c.status | capitalize }}</span></td>
+              <td class="td-muted">{{ c.created_at[:10] }}</td>
+              <td>
+                <a href="{{ url_for('main.view_consultation', consultation_id=c.id) }}" class="btn btn-ghost btn-icon" title="View">
+                  <i data-lucide="eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i data-lucide="clipboard-x"></i>
+        <p>No consultations yet</p>
+        <a href="{{ url_for('main.new_consultation') }}" class="btn btn-sm btn-primary">Start one now</a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Upcoming Appointments -->
+    <div class="dash-card">
+      <div class="dash-card-header">
+        <div class="dash-card-title">
+          <i data-lucide="calendar-days"></i>
+          <h3>Upcoming Appointments</h3>
+        </div>
+        <a href="{{ url_for('main.new_appointment') }}" class="btn btn-sm btn-outline">
+          <i data-lucide="plus"></i> Book
+        </a>
+      </div>
+
+      {% if appointments %}
+      <div class="appointment-list">
+        {% for a in appointments %}
+        <div class="appointment-item">
+          <div class="appt-date-badge">
+            <span class="appt-month">{{ a.appointment_date[5:7] | int | month_name }}</span>
+            <span class="appt-day">{{ a.appointment_date[8:10] }}</span>
+          </div>
+          <div class="appt-info">
+            <span class="appt-doctor">{{ a.doctor_name or 'Doctor TBD' }}</span>
+            <span class="appt-specialty">{{ a.specialty or 'General Practice' }}</span>
+            <span class="appt-time"><i data-lucide="clock"></i> {{ a.appointment_time }} &bull; {{ a.type | capitalize }}</span>
+          </div>
+          <span class="badge badge-status-{{ a.status }}">{{ a.status | capitalize }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i data-lucide="calendar-x"></i>
+        <p>No upcoming appointments</p>
+        <a href="{{ url_for('main.new_appointment') }}" class="btn btn-sm btn-outline">Book now</a>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Health profile summary -->
+  {% if patient %}
+  <div class="dash-card profile-summary">
+    <div class="dash-card-header">
+      <div class="dash-card-title">
+        <i data-lucide="user-circle"></i>
+        <h3>Health Profile</h3>
+      </div>
+      <a href="{{ url_for('main.profile') }}" class="btn btn-sm btn-ghost">
+        <i data-lucide="pencil"></i> Edit
+      </a>
+    </div>
+    <div class="profile-grid">
+      <div class="profile-item">
+        <span class="profile-item-label">Blood Type</span>
+        <span class="profile-item-value blood-type">{{ patient.blood_type or '—' }}</span>
+      </div>
+      <div class="profile-item">
+        <span class="profile-item-label">Gender</span>
+        <span class="profile-item-value">{{ patient.gender or '—' }}</span>
+      </div>
+      <div class="profile-item">
+        <span class="profile-item-label">Date of Birth</span>
+        <span class="profile-item-value">{{ patient.date_of_birth or '—' }}</span>
+      </div>
+      <div class="profile-item">
+        <span class="profile-item-label">Allergies</span>
+        <span class="profile-item-value">{{ patient.allergies or 'None listed' }}</span>
+      </div>
+      <div class="profile-item">
+        <span class="profile-item-label">Emergency Contact</span>
+        <span class="profile-item-value">{{ patient.emergency_contact or '—' }}</span>
+      </div>
+      <div class="profile-item">
+        <span class="profile-item-label">Emergency Phone</span>
+        <span class="profile-item-value">{{ patient.emergency_phone or '—' }}</span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

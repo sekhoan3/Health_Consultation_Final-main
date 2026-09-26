@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div>
+      <h1 class="page-title">My Profile</h1>
+      <p class="page-subtitle">Manage your personal and medical information</p>
+    </div>
+  </div>
+</div>
+
+<div class="profile-layout">
+
+  <!-- Profile card -->
+  <div class="profile-card-hero">
+    <div class="profile-avatar-lg">{{ session.user_name[0] | upper }}</div>
+    <div class="profile-hero-info">
+      <h2>{{ session.user_name }}</h2>
+      <span class="role-badge">
+        {% if role == 'doctor' %}<i data-lucide="stethoscope"></i>{% else %}<i data-lucide="user"></i>{% endif %}
+        {{ role | capitalize }}
+      </span>
+      <p class="profile-email"><i data-lucide="mail"></i> {{ session.user_email }}</p>
+    </div>
+    {% if role == 'patient' and profile %}
+    <div class="profile-quick-stats">
+      <div class="quick-stat">
+        <span class="qs-value blood-type">{{ profile.blood_type or '—' }}</span>
+        <span class="qs-label">Blood Type</span>
+      </div>
+      <div class="quick-stat">
+        <span class="qs-value">{{ profile.gender or '—' }}</span>
+        <span class="qs-label">Gender</span>
+      </div>
+      <div class="quick-stat">
+        <span class="qs-value">{{ profile.date_of_birth or '—' }}</span>
+        <span class="qs-label">Date of Birth</span>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if role == 'patient' %}
+  <form method="POST" action="{{ url_for('main.profile') }}" class="profile-form-card">
+
+    <div class="form-section-title">
+      <i data-lucide="user"></i> Personal Information
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="date_of_birth" class="form-label">Date of Birth</label>
+        <input type="date" id="date_of_birth" name="date_of_birth" class="form-input"
+          value="{{ profile.date_of_birth or '' }}" />
+      </div>
+      <div class="form-group">
+        <label for="gender" class="form-label">Gender</label>
+        <select id="gender" name="gender" class="form-input form-select">
+          <option value="">Select</option>
+          <option value="Male"            {% if profile and profile.gender == 'Male' %}selected{% endif %}>Male</option>
+          <option value="Female"          {% if profile and profile.gender == 'Female' %}selected{% endif %}>Female</option>
+          <option value="Non-binary"      {% if profile and profile.gender == 'Non-binary' %}selected{% endif %}>Non-binary</option>
+          <option value="Prefer not to say" {% if profile and profile.gender == 'Prefer not to say' %}selected{% endif %}>Prefer not to say</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="phone" class="form-label">Phone Number</label>
+        <input type="tel" id="phone" name="phone" class="form-input"
+          value="{{ profile.phone or '' }}" placeholder="+1 555 000 0000" />
+      </div>
+      <div class="form-group">
+        <label for="blood_type" class="form-label">Blood Type</label>
+        <select id="blood_type" name="blood_type" class="form-input form-select">
+          <option value="">Select</option>
+          {% for bt in ['A+','A-','B+','B-','AB+','AB-','O+','O-','Unknown'] %}
+          <option value="{{ bt }}" {% if profile and profile.blood_type == bt %}selected{% endif %}>{{ bt }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="address" class="form-label">Address</label>
+      <input type="text" id="address" name="address" class="form-input"
+        value="{{ profile.address or '' }}" placeholder="123 Main St, City, State" />
+    </div>
+
+    <div class="form-section-title">
+      <i data-lucide="activity"></i> Medical Information
+    </div>
+
+    <div class="form-group">
+      <label for="allergies" class="form-label">Known Allergies</label>
+      <input type="text" id="allergies" name="allergies" class="form-input"
+        value="{{ profile.allergies or '' }}" placeholder="e.g. Penicillin, Peanuts — or None" />
+    </div>
+
+    <div class="form-section-title">
+      <i data-lucide="phone-call"></i> Emergency Contact
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="emergency_contact" class="form-label">Contact Name</label>
+        <input type="text" id="emergency_contact" name="emergency_contact" class="form-input"
+          value="{{ profile.emergency_contact or '' }}" placeholder="Full name" />
+      </div>
+      <div class="form-group">
+        <label for="emergency_phone" class="form-label">Contact Phone</label>
+        <input type="tel" id="emergency_phone" name="emergency_phone" class="form-input"
+          value="{{ profile.emergency_phone or '' }}" placeholder="+1 555 000 0000" />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="save"></i> Save Changes
+      </button>
+    </div>
+
+  </form>
+
+  {% else %}
+  <!-- Doctor profile view -->
+  <div class="profile-form-card">
+    <div class="form-section-title">
+      <i data-lucide="briefcase-medical"></i> Professional Information
+    </div>
+    <div class="info-list">
+      <div class="info-list-item">
+        <span class="info-label">Specialty</span>
+        <span class="info-value">{{ profile.specialty or '—' }}</span>
+      </div>
+      <div class="info-list-item">
+        <span class="info-label">License Number</span>
+        <span class="info-value">{{ profile.license_number or '—' }}</span>
+      </div>
+      <div class="info-list-item">
+        <span class="info-label">Phone</span>
+        <span class="info-value">{{ profile.phone or '—' }}</span>
+      </div>
+      <div class="info-list-item">
+        <span class="info-label">Bio</span>
+        <span class="info-value">{{ profile.bio or '—' }}</span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

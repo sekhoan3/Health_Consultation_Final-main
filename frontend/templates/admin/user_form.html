@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit User' if action == 'edit' else 'Add User' }}{% endblock %}
+{% block page_title %}{{ 'Edit User' if action == 'edit' else 'Add User' }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <a href="{{ url_for('admin.users') }}" class="btn btn-ghost btn-sm">
+      <i data-lucide="arrow-left"></i> Back to Users
+    </a>
+    <div>
+      <h1 class="page-title">{{ 'Edit User Role' if action == 'edit' else 'Add New User' }}</h1>
+      <p class="page-subtitle">
+        {% if action == 'edit' %}Change the role assigned to {{ user.full_name }}
+        {% else %}Create a new account for any role{% endif %}
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="form-container" style="max-width:560px;">
+  <div class="form-card">
+
+    {% if action == 'edit' and user %}
+    <div class="user-preview-row">
+      <div class="user-cell-avatar {% if user.role == 'admin' %}avatar-admin{% elif user.role == 'doctor' %}avatar-doctor{% endif %}" style="width:48px;height:48px;font-size:1.2rem;">
+        {{ user.full_name[0] | upper }}
+      </div>
+      <div>
+        <p style="font-weight:700;color:var(--gray-900);">{{ user.full_name }}</p>
+        <p style="font-size:.83rem;color:var(--gray-500);">{{ user.email }}</p>
+      </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('admin.edit_user', user_id=user.id) }}">
+      <div class="form-group">
+        <label class="form-label">Assign Role</label>
+        <div class="role-selector" style="grid-template-columns:1fr 1fr 1fr;">
+          <label class="role-option {% if user.role == 'patient' %}selected{% endif %}" id="rPatient">
+            <input type="radio" name="role" value="patient"
+              {% if user.role == 'patient' %}checked{% endif %}
+              onchange="selectAdminRole('rPatient','rDoctor','rAdmin')"/>
+            <i data-lucide="user"></i><span>Patient</span>
+          </label>
+          <label class="role-option {% if user.role == 'doctor' %}selected{% endif %}" id="rDoctor">
+            <input type="radio" name="role" value="doctor"
+              {% if user.role == 'doctor' %}checked{% endif %}
+              onchange="selectAdminRole('rDoctor','rPatient','rAdmin')"/>
+            <i data-lucide="stethoscope"></i><span>Doctor</span>
+          </label>
+          <label class="role-option {% if user.role == 'admin' %}selected{% endif %}" id="rAdmin">
+            <input type="radio" name="role" value="admin"
+              {% if user.role == 'admin' %}checked{% endif %}
+              onchange="selectAdminRole('rAdmin','rPatient','rDoctor')"/>
+            <i data-lucide="shield"></i><span>Admin</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-actions">
+        <a href="{{ url_for('admin.users') }}" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary">
+          <i data-lucide="save"></i> Save Role
+        </button>
+      </div>
+    </form>
+
+    {% else %}
+
+    <form method="POST" action="{{ url_for('admin.create_user') }}">
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="form-group">
+          <label for="full_name" class="form-label required">
+            <i data-lucide="user"></i> Full Name
+          </label>
+          <input type="text" id="full_name" name="full_name" class="form-input"
+            value="{{ full_name or '' }}" placeholder="Full name" required />
+        </div>
+        <div class="form-group">
+          <label for="email" class="form-label required">
+            <i data-lucide="mail"></i> Email Address
+          </label>
+          <input type="email" id="email" name="email" class="form-input"
+            value="{{ email or '' }}" placeholder="user@example.com" required />
+        </div>
+        <div class="form-group">
+          <label for="password" class="form-label required">
+            <i data-lucide="lock"></i> Password
+          </label>
+          <div class="input-password">
+            <input type="password" id="password" name="password" class="form-input"
+              placeholder="Min. 6 characters" required />
+            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+              <i data-lucide="eye" id="password-eye"></i>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">Role</label>
+          <div class="role-selector" style="grid-template-columns:1fr 1fr 1fr;">
+            <label class="role-option {% if (role or 'patient') == 'patient' %}selected{% endif %}" id="rPatient">
+              <input type="radio" name="role" value="patient"
+                {% if (role or 'patient') == 'patient' %}checked{% endif %}
+                onchange="selectAdminRole('rPatient','rDoctor','rAdmin')"/>
+              <i data-lucide="user"></i><span>Patient</span>
+            </label>
+            <label class="role-option {% if role == 'doctor' %}selected{% endif %}" id="rDoctor">
+              <input type="radio" name="role" value="doctor"
+                {% if role == 'doctor' %}checked{% endif %}
+                onchange="selectAdminRole('rDoctor','rPatient','rAdmin')"/>
+              <i data-lucide="stethoscope"></i><span>Doctor</span>
+            </label>
+            <label class="role-option {% if role == 'admin' %}selected{% endif %}" id="rAdmin">
+              <input type="radio" name="role" value="admin"
+                {% if role == 'admin' %}checked{% endif %}
+                onchange="selectAdminRole('rAdmin','rPatient','rDoctor')"/>
+              <i data-lucide="shield"></i><span>Admin</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-actions">
+          <a href="{{ url_for('admin.users') }}" class="btn btn-ghost">Cancel</a>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="user-plus"></i> Create User
+          </button>
+        </div>
+      </div>
+    </form>
+
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function selectAdminRole(selected, ...others) {
+    document.getElementById(selected).classList.add('selected');
+    others.forEach(id => document.getElementById(id)?.classList.remove('selected'));
+  }
+</script>
+{% endblock %}

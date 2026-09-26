@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Manage Users{% endblock %}
+{% block page_title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div>
+      <h1 class="page-title">Manage Users</h1>
+      <p class="page-subtitle">{{ users|length }} registered user{{ 's' if users|length != 1 }}</p>
+    </div>
+  </div>
+  <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">
+    <i data-lucide="user-plus"></i> Add User
+  </a>
+</div>
+
+<div class="filter-bar">
+  <div class="search-box">
+    <i data-lucide="search"></i>
+    <input type="text" id="userSearch" placeholder="Search by name, email or role..." oninput="filterUsers()" />
+  </div>
+  <div class="filter-buttons">
+    <button class="filter-btn active" onclick="filterRole('all', this)">All</button>
+    <button class="filter-btn" onclick="filterRole('patient', this)">Patients</button>
+    <button class="filter-btn" onclick="filterRole('doctor', this)">Doctors</button>
+    <button class="filter-btn" onclick="filterRole('admin', this)">Admins</button>
+  </div>
+</div>
+
+{% if users %}
+<div class="card">
+  <div class="table-wrapper">
+    <table class="data-table" id="usersTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Role</th>
+          <th>Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+        <tr data-role="{{ u.role }}">
+          <td class="td-muted">{{ u.id }}</td>
+          <td>
+            <div class="user-cell">
+              <div class="user-cell-avatar {% if u.role == 'admin' %}avatar-admin{% elif u.role == 'doctor' %}avatar-doctor{% endif %}">
+                {{ u.full_name[0] | upper }}
+              </div>
+              <span class="td-primary">{{ u.full_name }}</span>
+            </div>
+          </td>
+          <td class="td-muted">{{ u.email }}</td>
+          <td class="td-muted">{{ u.phone or '—' }}</td>
+          <td>
+            <span class="badge role-badge-{{ u.role }}">
+              {% if u.role == 'admin' %}<i data-lucide="shield"></i>
+              {% elif u.role == 'doctor' %}<i data-lucide="stethoscope"></i>
+              {% else %}<i data-lucide="user"></i>{% endif %}
+              {{ u.role | capitalize }}
+            </span>
+          </td>
+          <td class="td-muted">{{ u.created_at[:10] }}</td>
+          <td>
+            <div class="action-btns">
+              <a href="{{ url_for('admin.edit_user', user_id=u.id) }}"
+                 class="btn btn-ghost btn-icon" title="Edit role">
+                <i data-lucide="pencil"></i>
+              </a>
+              {% if u.id != session.user_id %}
+              <form method="POST" action="{{ url_for('admin.delete_user_route', user_id=u.id) }}"
+                    onsubmit="return confirm('Delete {{ u.full_name }}? This cannot be undone.')">
+                <button type="submit" class="btn btn-ghost btn-icon btn-danger-icon" title="Delete user">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-page">
+  <div class="empty-page-icon"><i data-lucide="users"></i></div>
+  <h3>No users found</h3>
+  <p>Start by adding the first user.</p>
+  <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">
+    <i data-lucide="user-plus"></i> Add User
+  </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function filterUsers() {
+    const q = document.getElementById('userSearch').value.toLowerCase();
+    document.querySelectorAll('#usersTable tbody tr').forEach(r => {
+      r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  }
+  function filterRole(role, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#usersTable tbody tr').forEach(r => {
+      r.style.display = (role === 'all' || r.dataset.role === role) ? '' : 'none';
+    });
+  }
+</script>
+{% endblock %}

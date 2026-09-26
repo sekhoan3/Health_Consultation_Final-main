@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Consultations{% endblock %}
+{% block page_title %}Consultations{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="page-header-left">
+    <div>
+      <h1 class="page-title">Consultations</h1>
+      <p class="page-subtitle">
+        {% if role == 'patient' %}Your health consultation requests{% else %}All patient consultations{% endif %}
+      </p>
+    </div>
+  </div>
+  {% if role == 'patient' %}
+  <a href="{{ url_for('main.new_consultation') }}" class="btn btn-primary">
+    <i data-lucide="plus"></i> New Consultation
+  </a>
+  {% endif %}
+</div>
+
+<!-- Filter bar -->
+<div class="filter-bar">
+  <div class="search-box">
+    <i data-lucide="search"></i>
+    <input type="text" id="tableSearch" placeholder="Search consultations..." oninput="filterTable()" />
+  </div>
+  <div class="filter-buttons">
+    <button class="filter-btn active" onclick="filterStatus('all', this)">All</button>
+    <button class="filter-btn" onclick="filterStatus('pending', this)">Pending</button>
+    <button class="filter-btn" onclick="filterStatus('completed', this)">Completed</button>
+    <button class="filter-btn" onclick="filterStatus('cancelled', this)">Cancelled</button>
+  </div>
+</div>
+
+{% if consultations %}
+<div class="card">
+  <div class="table-wrapper">
+    <table class="data-table" id="consultationsTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          {% if role != 'patient' %}<th>Patient</th>{% endif %}
+          <th>Chief Complaint</th>
+          <th>Symptoms</th>
+          <th>Severity</th>
+          <th>Status</th>
+          <th>Doctor</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in consultations %}
+        <tr data-status="{{ c.status }}">
+          <td class="td-muted">#{{ c.id }}</td>
+          {% if role != 'patient' %}<td class="td-primary">{{ c.patient_name }}</td>{% endif %}
+          <td class="td-primary">{{ c.chief_complaint }}</td>
+          <td class="td-truncate">{{ (c.symptoms or '')[:60] }}{% if c.symptoms and c.symptoms|length > 60 %}…{% endif %}</td>
+          <td><span class="badge badge-severity-{{ (c.severity or 'low') | lower }}">{{ c.severity or '—' }}</span></td>
+          <td><span class="badge badge-status-{{ c.status }}">{{ c.status | capitalize }}</span></td>
+          <td class="td-muted">{{ c.doctor_name or 'Unassigned' }}</td>
+          <td class="td-muted">{{ c.created_at[:10] }}</td>
+          <td>
+            <a href="{{ url_for('main.view_consultation', consultation_id=c.id) }}" class="btn btn-ghost btn-icon" title="View">
+              <i data-lucide="eye"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="empty-page">
+  <div class="empty-page-icon"><i data-lucide="clipboard-x"></i></div>
+  <h3>No consultations found</h3>
+  {% if role == 'patient' %}
+  <p>You have not submitted any consultation requests yet.</p>
+  <a href="{{ url_for('main.new_consultation') }}" class="btn btn-primary">
+    <i data-lucide="plus"></i> Request a Consultation
+  </a>
+  {% else %}
+  <p>No consultations have been submitted by patients yet.</p>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+  function filterTable() {
+    const query = document.getElementById('tableSearch').value.toLowerCase();
+    document.querySelectorAll('#consultationsTable tbody tr').forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(query) ? '' : 'none';
+    });
+  }
+
+  function filterStatus(status, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#consultationsTable tbody tr').forEach(row => {
+      row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none';
+    });
+  }
+</script>
+{% endblock %}
